@@ -1,0 +1,15 @@
+Package: leadtimefluxR
+Type: Package
+Title: Lead-time divergence and pickup risk toolkit in R
+Version: 0.1.2
+Authors@R: person(given = "Harrison", family = "Katz", role = c("aut","cre"), email = "harrisonekatz@gmail.com")
+Description: Implements empirical lead-time distributions, normalized L1 divergence
+    vs baselines, STL decomposition of divergence, pickup curves, a conservative
+    pickup error bound, synthetic booking data, policy mappings, and evaluation metrics.
+License: MIT + file LICENSE
+Encoding: UTF-8
+Depends: R (>= 4.1.0)
+Imports: stats, utils, methods, dplyr, tidyr, lubridate, ggplot2
+Suggests: testthat (>= 3.0.0)
+Config/testthat/edition: 3
+LazyData: true
