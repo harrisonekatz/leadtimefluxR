@@ -1,0 +1,18 @@
+cff-version: 1.2.0
+title: "leadtimefluxR: Lead-time divergence and pickup risk toolkit in R"
+message: "If you use this software, please cite it as below."
+type: software
+authors:
+  - family-names: Katz
+    given-names: Harrison
+    affiliation: Airbnb
+    orcid: "https://orcid.org/0009-0001-2070-8685"
+version: "0.1.2"
+date-released: "2025-11-15"
+repository-code: "https://github.com/harrisonekatz/leadtimefluxR"
+url: "https://github.com/harrisonekatz/leadtimefluxR"
+license: MIT
+# Add a DOI after you mint one on Zenodo:
+# identifiers:
+#   - type: doi
+#     value: 10.5281/zenodo.XXXXXXX
