@@ -8,12 +8,15 @@ ttl   <- if (!is.null(meta$Title)) meta$Title else "Lead-time divergence and pic
 bib <- bibentry(
   bibtype = "Manual",
   title   = sprintf("leadtimefluxR: %s", ttl),
-  author  = c(person(given = "Harrison", family = "Katz", role = c("aut","cre"))),
+  author  = c(person(given  = "Harrison",
+                     family = "Katz",
+                     role   = c("aut", "cre"),
+                     comment = c(ORCID = "0009-0001-2070-8685"))),
   year    = yr,
   note    = sprintf("R package version %s", vers),
   url     = "https://github.com/harrisonekatz/leadtimefluxR"
-  # After you mint a DOI with Zenodo, add for example:
-  # , doi = "10.5281/zenodo.1234567"
+  # After you mint a DOI with Zenodo, add:
+  # , doi = "10.5281/zenodo.XXXXXXX"
 )
 
 print(bib, style = "Bibtex")
