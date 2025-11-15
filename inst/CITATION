@@ -1,7 +1,7 @@
 citHeader("To cite leadtimefluxR in publications, use:")
 
 meta  <- utils::packageDescription("leadtimefluxR")
-yr    <- if (!is.null(meta$Date)) sub("-.*", "", meta$Date) else format(Sys.Date(), "%Y")
+yr    <- "2025"   # hard code the year here
 vers  <- if (!is.null(meta$Version)) meta$Version else "dev"
 ttl   <- if (!is.null(meta$Title)) meta$Title else "Lead-time divergence and pickup risk toolkit in R"
 
@@ -15,8 +15,5 @@ bib <- bibentry(
   year    = yr,
   note    = sprintf("R package version %s", vers),
   url     = "https://github.com/harrisonekatz/leadtimefluxR"
-  # After you mint a DOI on Zenodo, add:
-  # , doi = "10.5281/zenodo.XXXXXXX"
 )
-
 print(bib, style = "Bibtex")
