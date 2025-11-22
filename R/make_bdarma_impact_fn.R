@@ -12,30 +12,29 @@ make_bdarma_impact_artifacts <- function(root = "paper/impact_case") {
   dirs <- c(data_dir, figs_dir, tables_dir)
   invisible(lapply(dirs, dir.create, recursive = TRUE, showWarnings = FALSE))
 
-  # Helper plot saver
   save_png <- function(p, path, width = 1600, height = 1000, res = 200) {
     grDevices::png(path, width = width, height = height, res = res)
-    print(p)
-    grDevices::dev.off()
+    print(p); grDevices::dev.off()
   }
 
-  # Expected CSVs
   f_div <- file.path(data_dir, "caseA_divergence.csv")
   f_err <- file.path(data_dir, "caseA_errors.csv")
   f_stb <- file.path(data_dir, "caseB_stability.csv")
 
-  # If missing, generate reproducible demo data
+  # Create reproducible demo CSVs if missing
   synth_if_missing <- function() {
     if (!file.exists(f_div) || !file.exists(f_err) || !file.exists(f_stb)) {
       set.seed(20251115)
-      # Months 2022-01 to 2023-12
       months <- seq(as.Date("2022-01-01"), as.Date("2023-12-01"), by = "month")
       period <- ifelse(months < as.Date("2023-01-01"), "pre", "post")
-      # divergence around 0.16 with slight post reduction
-      D <- 0.16 + stats::rnorm(length(months), sd = 0.015) + ifelse(period == "post", -0.01, 0)
-      readr::write_csv(data.frame(month = months, D = round(pmax(0.12, D), 3), period = period), f_div)
 
-      # horizon MASE by bin, slight post improvement
+      D <- 0.16 + stats::rnorm(length(months), sd = 0.015) +
+        ifelse(period == "post", -0.01, 0)
+      readr::write_csv(
+        data.frame(month = months, D = round(pmax(0.12, D), 3), period = period),
+        f_div
+      )
+
       bins <- c("0-7","8-14","15-21")
       df_err <- do.call(rbind, lapply(bins, function(b) {
         base <- if (b == "0-7") 0.95 else if (b == "8-14") 1.05 else 1.18
@@ -45,9 +44,12 @@ make_bdarma_impact_artifacts <- function(root = "paper/impact_case") {
       }))
       readr::write_csv(df_err, f_err)
 
-      # Forecast stability S, smaller is more stable, post improvement
-      S <- 0.20 + stats::rnorm(length(months), sd = 0.02) + ifelse(period == "post", -0.05, 0)
-      readr::write_csv(data.frame(month = months, S = round(pmax(0.05, S), 3), period = period), f_stb)
+      S <- 0.20 + stats::rnorm(length(months), sd = 0.02) +
+        ifelse(period == "post", -0.05, 0)
+      readr::write_csv(
+        data.frame(month = months, S = round(pmax(0.05, S), 3), period = period),
+        f_stb
+      )
     }
   }
   synth_if_missing()
@@ -56,7 +58,7 @@ make_bdarma_impact_artifacts <- function(root = "paper/impact_case") {
   err <- readr::read_csv(f_err, show_col_types = FALSE)
   stb <- readr::read_csv(f_stb, show_col_types = FALSE)
 
-  # 1) Divergence plot
+  # Divergence plot
   p_div <- ggplot2::ggplot(div, ggplot2::aes(x = month, y = D, color = period, group = 1)) +
     ggplot2::geom_line(linewidth = 0.9) +
     ggplot2::scale_x_date(date_breaks = "3 months", date_labels = "%b\n%Y") +
@@ -65,7 +67,7 @@ make_bdarma_impact_artifacts <- function(root = "paper/impact_case") {
     ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 45, hjust = 1, vjust = 1))
   save_png(p_div, file.path(figs_dir, "bdarma_divergence.png"))
 
-  # 2) Accuracy plot
+  # Accuracy plot
   p_err <- ggplot2::ggplot(err, ggplot2::aes(x = month, y = MASE, color = period)) +
     ggplot2::geom_line() +
     ggplot2::facet_wrap(~ horizon_bin, ncol = 1, scales = "free_y") +
@@ -75,7 +77,7 @@ make_bdarma_impact_artifacts <- function(root = "paper/impact_case") {
     ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 45, hjust = 1, vjust = 1))
   save_png(p_err, file.path(figs_dir, "bdarma_accuracy.png"))
 
-  # 3) Stability plot
+  # Stability plot
   p_stb <- ggplot2::ggplot(stb, ggplot2::aes(x = month, y = S, color = period, group = 1)) +
     ggplot2::geom_line(linewidth = 0.9) +
     ggplot2::scale_x_date(date_breaks = "3 months", date_labels = "%b\n%Y") +
@@ -84,32 +86,30 @@ make_bdarma_impact_artifacts <- function(root = "paper/impact_case") {
     ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 45, hjust = 1, vjust = 1))
   save_png(p_stb, file.path(figs_dir, "bdarma_stability.png"))
 
-  # 4) Summary table as LaTeX
-  # Pre vs post deltas
+  # Pre vs post summary as LaTeX
   d_div <- div |>
     dplyr::summarise(
-      pre  = mean(D[period == "pre"],  na.rm = TRUE),
-      post = mean(D[period == "post"], na.rm = TRUE),
+      pre   = mean(D[period == "pre"],  na.rm = TRUE),
+      post  = mean(D[period == "post"], na.rm = TRUE),
       delta = post - pre
     )
 
   d_err <- err |>
     dplyr::group_by(horizon_bin) |>
     dplyr::summarise(
-      pre  = mean(MASE[period == "pre"],  na.rm = TRUE),
-      post = mean(MASE[period == "post"], na.rm = TRUE),
+      pre   = mean(MASE[period == "pre"],  na.rm = TRUE),
+      post  = mean(MASE[period == "post"], na.rm = TRUE),
       delta = post - pre,
       .groups = "drop"
     )
 
   d_stb <- stb |>
     dplyr::summarise(
-      pre  = mean(S[period == "pre"],  na.rm = TRUE),
-      post = mean(S[period == "post"], na.rm = TRUE),
+      pre   = mean(S[period == "pre"],  na.rm = TRUE),
+      post  = mean(S[period == "post"], na.rm = TRUE),
       delta = post - pre
     )
 
-  # Write a compact LaTeX table file
   tex <- c(
     "% Auto-generated by make_bdarma_impact_artifacts()",
     "\\begin{table}[t]",
@@ -120,15 +120,13 @@ make_bdarma_impact_artifacts <- function(root = "paper/impact_case") {
     "\\toprule",
     "Metric & Pre & Post & Post - Pre \\\\",
     "\\midrule",
-    sprintf("Divergence $D$ & %.3f & %.3f & %.3f \\\\",
-            d_div$pre, d_div$post, d_div$delta),
+    sprintf("Divergence $D$ & %.3f & %.3f & %.3f \\\\", d_div$pre, d_div$post, d_div$delta),
     "\\midrule",
     "\\multicolumn{4}{l}{MASE by horizon} \\\\",
     paste(apply(d_err, 1, function(r) sprintf("%s & %.3f & %.3f & %.3f \\\\",
-           r[1], as.numeric(r[2]), as.numeric(r[3]), as.numeric(r[4]))), collapse = "\n"),
+                                              r[1], as.numeric(r[2]), as.numeric(r[3]), as.numeric(r[4]))), collapse = "\n"),
     "\\midrule",
-    sprintf("Stability $S$ & %.3f & %.3f & %.3f \\\\",
-            d_stb$pre, d_stb$post, d_stb$delta),
+    sprintf("Stability $S$ & %.3f & %.3f & %.3f \\\\", d_stb$pre, d_stb$post, d_stb$delta),
     "\\bottomrule",
     "\\end{tabular}",
     "\\end{table}"
